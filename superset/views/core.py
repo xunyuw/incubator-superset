@@ -43,7 +43,9 @@ from superset.legacy import cast_form_data
 import superset.models.core as models
 from superset.models.sql_lab import Query
 from superset.sql_parse import SupersetQuery
-from superset.utils import has_access, merge_extra_filters, QueryStatus
+from superset.utils import (
+    has_access, merge_extra_filters, merge_request_params, QueryStatus,
+)
 from .base import (
     api, BaseSupersetView, CsvResponse, DeleteMixin,
     generate_download_headers, get_error_msg, get_user_roles,
@@ -963,6 +965,17 @@ class Superset(BaseSupersetView):
         if request_args_data:
             form_data.update(json.loads(request_args_data))
 
+        url_id = request.args.get('r')
+        if url_id:
+            saved_url = db.session.query(models.Url).filter_by(id=url_id).first()
+            if saved_url:
+                url_str = parse.unquote_plus(
+                    saved_url.url.split('?')[1][10:], encoding='utf-8', errors=None)
+                url_form_data = json.loads(url_str)
+                # allow form_date in request override saved url
+                url_form_data.update(form_data)
+                form_data = url_form_data
+
         if request.args.get('viz_type'):
             # Converting old URLs
             form_data = cast_form_data(form_data)
@@ -1084,7 +1097,10 @@ class Superset(BaseSupersetView):
             return json_error_response(utils.error_msg_from_exception(e))
 
         status = 200
-        if payload.get('status') == QueryStatus.FAILED:
+        if (
+            payload.get('status') == QueryStatus.FAILED or
+            payload.get('error') is not None
+        ):
             status = 400
 
         return json_success(viz_obj.json_dumps(payload), status=status)
@@ -1210,18 +1226,6 @@ class Superset(BaseSupersetView):
         datasource_id, datasource_type = self.datasource_info(
             datasource_id, datasource_type, form_data)
 
-        saved_url = None
-        url_id = request.args.get('r')
-        if url_id:
-            saved_url = db.session.query(models.Url).filter_by(id=url_id).first()
-            if saved_url:
-                url_str = parse.unquote_plus(
-                    saved_url.url.split('?')[1][10:], encoding='utf-8', errors=None)
-                url_form_data = json.loads(url_str)
-                # allow form_date in request override saved url
-                url_form_data.update(form_data)
-                form_data = url_form_data
-
         error_redirect = '/slicemodelview/list/'
         datasource = ConnectorRegistry.get_datasource(
             datasource_type, datasource_id, db.session)
@@ -1252,6 +1256,10 @@ class Superset(BaseSupersetView):
 
         # On explore, merge extra filters into the form data
         merge_extra_filters(form_data)
+
+        # merge request url params
+        if request.method == 'GET':
+            merge_request_params(form_data, request.args)
 
         # handle save or overwrite
         action = request.args.get('action')

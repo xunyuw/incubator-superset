@@ -164,6 +164,7 @@ LANGUAGES = {
     'zh': {'flag': 'cn', 'name': 'Chinese'},
     'ja': {'flag': 'jp', 'name': 'Japanese'},
     'de': {'flag': 'de', 'name': 'German'},
+    'pt-BR': {'flag': 'br', 'name': 'Brazilian Portuguese'},
 }
 # ---------------------------------------------------
 # Image and file configuration
@@ -376,6 +377,22 @@ HIVE_POLL_INTERVAL = 5
 # geospatial ones) by inputing javascript in controls. This exposes
 # an XSS security vulnerability
 ENABLE_JAVASCRIPT_CONTROLS = False
+
+# A callable that allows altering the database conneciton URL and params
+# on the fly, at runtime. This allows for things like impersonation or
+# arbitrary logic. For instance you can wire different users to
+# use different connection parameters, or pass their email address as the
+# username. The function receives the connection uri object, connection
+# params, and user object, and returns the mutated uri and params objects.
+# Example:
+#   def DB_CONNECTION_MUTATOR(uri, params, user):
+#       if user and user.email:
+#           uri.username = user.email
+#       return uri, params
+#
+# Note that the returned uri and params are passed directly to sqlalchemy's
+# as such `create_engine(url, **params)`
+DB_CONNECTION_MUTATOR = None
 
 try:
     if CONFIG_PATH_ENV_VAR in os.environ:
