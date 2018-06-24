@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# pylint: disable=C,R,W
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -11,13 +12,13 @@ import logging
 from flask import flash, Markup, redirect
 from flask_appbuilder import CompactCRUDMixin, expose
 from flask_appbuilder.models.sqla.interface import SQLAInterface
+from flask_appbuilder.security.decorators import has_access
 from flask_babel import gettext as __
 from flask_babel import lazy_gettext as _
 
 from superset import appbuilder, db, security_manager, utils
 from superset.connectors.base.views import DatasourceModelView
 from superset.connectors.connector_registry import ConnectorRegistry
-from superset.utils import has_access
 from superset.views.base import (
     BaseSupersetView, DatasourceFilter, DeleteMixin,
     get_datasource_exist_error_mgs, ListWidgetWithCheckboxes, SupersetModelView,
@@ -37,7 +38,7 @@ class DruidColumnInlineView(CompactCRUDMixin, SupersetModelView):  # noqa
     list_widget = ListWidgetWithCheckboxes
 
     edit_columns = [
-        'column_name', 'description', 'dimension_spec_json', 'datasource',
+        'column_name', 'verbose_name', 'description', 'dimension_spec_json', 'datasource',
         'groupby', 'filterable', 'count_distinct', 'sum', 'min', 'max']
     add_columns = edit_columns
     list_columns = [
@@ -210,7 +211,7 @@ class DruidDatasourceModelView(DatasourceModelView, DeleteMixin, YamlExportMixin
     order_columns = ['datasource_link', 'modified']
     related_views = [DruidColumnInlineView, DruidMetricInlineView]
     edit_columns = [
-        'datasource_name', 'cluster', 'slices', 'description', 'owner',
+        'datasource_name', 'cluster', 'description', 'owner',
         'is_hidden',
         'filter_select_enabled', 'fetch_values_from',
         'default_endpoint', 'offset', 'cache_timeout']
@@ -218,18 +219,18 @@ class DruidDatasourceModelView(DatasourceModelView, DeleteMixin, YamlExportMixin
         'datasource_name', 'cluster', 'description', 'owner',
     )
     add_columns = edit_columns
-    show_columns = add_columns + ['perm']
+    show_columns = add_columns + ['perm', 'slices']
     page_size = 500
     base_order = ('datasource_name', 'asc')
     description_columns = {
         'slices': _(
-            'The list of slices associated with this table. By '
+            'The list of charts associated with this table. By '
             'altering this datasource, you may change how these associated '
-            'slices behave. '
-            'Also note that slices need to point to a datasource, so '
-            'this form will fail at saving if removing slices from a '
-            'datasource. If you want to change the datasource for a slice, '
-            "overwrite the slice from the 'explore view'"),
+            'charts behave. '
+            'Also note that charts need to point to a datasource, so '
+            'this form will fail at saving if removing charts from a '
+            'datasource. If you want to change the datasource for a chart, '
+            "overwrite the chart from the 'explore view'"),
         'offset': _('Timezone offset (in hours) for this datasource'),
         'description': Markup(
             'Supports <a href="'
