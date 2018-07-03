@@ -16,8 +16,8 @@ PACKAGE_FILE = os.path.join(PACKAGE_DIR, 'package.json')
 with open(PACKAGE_FILE) as package_file:
     version_string = json.load(package_file)['version']
 
-with open('README.md') as readme:
-    long_description = readme.read()
+with open('README.md', encoding='utf-8') as f:
+    long_description = f.read()
 
 
 def get_git_sha():
@@ -54,7 +54,7 @@ setup(
     scripts=['superset/bin/superset'],
     install_requires=[
         'bleach',
-        'boto3>=1.4.6',
+        'boto3==1.4.7',
         'botocore>=1.7.0, <1.8.0',
         'celery>=4.2.0',
         'colorama',
@@ -90,6 +90,7 @@ setup(
         'sqlalchemy',
         'sqlalchemy-utils',
         'sqlparse',
+        'tableschema',
         'thrift>=0.9.3',
         'thrift-sasl>=0.2.1',
         'unicodecsv',
