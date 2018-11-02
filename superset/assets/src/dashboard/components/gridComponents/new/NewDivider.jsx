@@ -1,4 +1,5 @@
 import React from 'react';
+import { t } from '@superset-ui/translation';
 
 import { DIVIDER_TYPE } from '../../../util/componentTypes';
 import { NEW_DIVIDER_ID } from '../../../util/constants';
@@ -9,7 +10,7 @@ export default function DraggableNewDivider() {
     <DraggableNewComponent
       id={NEW_DIVIDER_ID}
       type={DIVIDER_TYPE}
-      label="Divider"
+      label={t('Divider')}
       className="divider-placeholder"
     />
   );

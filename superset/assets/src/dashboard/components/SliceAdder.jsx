@@ -4,6 +4,7 @@ import PropTypes from 'prop-types';
 import { DropdownButton, MenuItem } from 'react-bootstrap';
 import { CellMeasurer, CellMeasurerCache, List } from 'react-virtualized';
 import SearchInput, { createFilter } from 'react-search-input';
+import { t } from '@superset-ui/translation';
 
 import AddSliceCard from './AddSliceCard';
 import AddSliceDragPreview from './dnd/AddSliceDragPreview';
@@ -204,7 +205,7 @@ class SliceAdder extends React.Component {
       <div className="slice-adder-container">
         <div className="controls">
           <SearchInput
-            placeholder="Filter your charts"
+            placeholder={t('Filter your charts')}
             className="search-input"
             onChange={this.searchUpdated}
             onKeyPress={this.handleKeyPress}
@@ -225,8 +226,6 @@ class SliceAdder extends React.Component {
 
         {this.props.isLoading && <Loading />}
 
-        {this.props.errorMessage && <div>{this.props.errorMessage}</div>}
-
         {!this.props.isLoading &&
           this.state.filteredSlices.length > 0 && (
             <List
@@ -241,6 +240,10 @@ class SliceAdder extends React.Component {
               selectedSliceIds={this.props.selectedSliceIds}
             />
           )}
+
+        {this.props.errorMessage && (
+          <div className="error-message">{this.props.errorMessage}</div>
+        )}
 
         {/* Drag preview is just a single fixed-position element */}
         <AddSliceDragPreview slices={this.state.filteredSlices} />

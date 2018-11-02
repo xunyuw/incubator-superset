@@ -10,6 +10,7 @@ import FixedOrMetricControl from './FixedOrMetricControl';
 import HiddenControl from './HiddenControl';
 import SelectAsyncControl from './SelectAsyncControl';
 import SelectControl from './SelectControl';
+import SliderControl from './SliderControl';
 import SpatialControl from './SpatialControl';
 import TextAreaControl from './TextAreaControl';
 import TextControl from './TextControl';
@@ -18,6 +19,7 @@ import ViewportControl from './ViewportControl';
 import VizTypeControl from './VizTypeControl';
 import MetricsControl from './MetricsControl';
 import AdhocFilterControl from './AdhocFilterControl';
+import FilterPanel from './FilterPanel';
 
 const controlMap = {
   AnnotationLayerControl,
@@ -32,6 +34,7 @@ const controlMap = {
   HiddenControl,
   SelectAsyncControl,
   SelectControl,
+  SliderControl,
   SpatialControl,
   TextAreaControl,
   TextControl,
@@ -40,5 +43,6 @@ const controlMap = {
   VizTypeControl,
   MetricsControl,
   AdhocFilterControl,
+  FilterPanel,
 };
 export default controlMap;

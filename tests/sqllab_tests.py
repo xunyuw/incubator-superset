@@ -1,20 +1,15 @@
-# -*- coding: utf-8 -*-
 """Unit tests for Sql Lab"""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
 from datetime import datetime, timedelta
 import json
 import unittest
 
 from flask_appbuilder.security.sqla import models as ab_models
 
-from superset import db, security_manager, utils
+from superset import db, security_manager
 from superset.dataframe import SupersetDataFrame
 from superset.db_engine_specs import BaseEngineSpec
 from superset.models.sql_lab import Query
+from superset.utils.core import datetime_to_epoch, get_main_database
 from .base_tests import SupersetTestCase
 
 
@@ -55,8 +50,14 @@ class SqlLabTests(SupersetTestCase):
         data = self.run_sql('SELECT * FROM unexistant_table', '2')
         self.assertLess(0, len(data['error']))
 
+    def test_explain(self):
+        self.login('admin')
+
+        data = self.run_sql('EXPLAIN SELECT * FROM ab_user', '1')
+        self.assertLess(0, len(data['data']))
+
     def test_sql_json_has_access(self):
-        main_db = self.get_main_database(db.session)
+        main_db = get_main_database(db.session)
         security_manager.add_permission_view_menu('database_access', main_db.perm)
         db.session.commit()
         main_db_permission_view = (
@@ -114,7 +115,7 @@ class SqlLabTests(SupersetTestCase):
 
         data = self.get_json_resp(
             '/superset/queries/{}'.format(
-                int(utils.datetime_to_epoch(now)) - 1000))
+                int(datetime_to_epoch(now)) - 1000))
         self.assertEquals(1, len(data))
 
         self.logout()
@@ -236,25 +237,22 @@ class SqlLabTests(SupersetTestCase):
             'chartType': 'dist_bar',
             'datasourceName': 'test_viz_flow_table',
             'schema': 'superset',
-            'columns': {
-                'viz_type': {
-                    'is_date': False,
-                    'type': 'STRING',
-                    'nam:qe': 'viz_type',
-                    'is_dim': True,
-                },
-                'ccount': {
-                    'is_date': False,
-                    'type': 'OBJECT',
-                    'name': 'ccount',
-                    'is_dim': True,
-                    'agg': 'sum',
-                },
-            },
+            'columns': [{
+                'is_date': False,
+                'type': 'STRING',
+                'nam:qe': 'viz_type',
+                'is_dim': True,
+            }, {
+                'is_date': False,
+                'type': 'OBJECT',
+                'name': 'ccount',
+                'is_dim': True,
+                'agg': 'sum',
+            }],
             'sql': """\
                 SELECT viz_type, count(1) as ccount
                 FROM slices
-                WHERE viz_type LIKE '%%a%%'
+                WHERE viz_type LIKE '%a%'
                 GROUP BY viz_type""",
             'dbId': 1,
         }

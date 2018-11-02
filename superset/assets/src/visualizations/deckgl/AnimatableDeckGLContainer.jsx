@@ -8,48 +8,63 @@ const propTypes = {
   getLayers: PropTypes.func.isRequired,
   start: PropTypes.number.isRequired,
   end: PropTypes.number.isRequired,
-  step: PropTypes.number.isRequired,
+  getStep: PropTypes.func,
   values: PropTypes.array.isRequired,
+  aggregation: PropTypes.bool,
   disabled: PropTypes.bool,
   viewport: PropTypes.object.isRequired,
   children: PropTypes.node,
+  onViewportChange: PropTypes.func,
+  onValuesChange: PropTypes.func,
 };
 
 const defaultProps = {
+  aggregation: false,
   disabled: false,
-  step: 1,
+  onViewportChange: () => {},
+  onValuesChange: () => {},
 };
 
 export default class AnimatableDeckGLContainer extends React.Component {
   constructor(props) {
     super(props);
-    const { getLayers, start, end, step, values, disabled, viewport, ...other } = props;
-    this.state = { values, viewport };
+    const { getLayers, start, end, getStep, values, disabled, viewport, ...other } = props;
     this.other = other;
   }
-  componentWillReceiveProps(nextProps) {
-    this.setState({ values: nextProps.values, viewport: nextProps.viewport });
-  }
   render() {
-    const layers = this.props.getLayers(this.state.values);
+    const {
+      start,
+      end,
+      getStep,
+      disabled,
+      aggregation,
+      children,
+      getLayers,
+      values,
+      viewport,
+      onViewportChange,
+      onValuesChange,
+    } = this.props;
+    const layers = getLayers(values);
     return (
       <div>
         <DeckGLContainer
           {...this.other}
-          viewport={this.state.viewport}
+          viewport={viewport}
           layers={layers}
-          onViewportChange={newViewport => this.setState({ viewport: newViewport })}
+          onViewportChange={onViewportChange}
         />
-        {!this.props.disabled &&
+        {!disabled &&
         <PlaySlider
-          start={this.props.start}
-          end={this.props.end}
-          step={this.props.step}
-          values={this.state.values}
-          onChange={newValues => this.setState({ values: newValues })}
+          start={start}
+          end={end}
+          step={getStep(start)}
+          values={values}
+          range={!aggregation}
+          onChange={onValuesChange}
         />
         }
-        {this.props.children}
+        {children}
       </div>
     );
   }

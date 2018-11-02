@@ -1,4 +1,5 @@
-import $ from 'jquery';
+/* eslint no-console: 0 */
+import { SupersetClient } from '@superset-ui/core';
 
 // This creates an association between an eventName and the ActionLog instance so that
 // Logger.append calls do not have to know about the appropriate ActionLog instance
@@ -11,6 +12,7 @@ export const Logger = {
       if (!addEventHandlers[eventName]) {
         addEventHandlers[eventName] = log.addEvent.bind(log);
       } else {
+        // eslint-disable-next-line no-console
         console.warn(`Duplicate event handler for event '${eventName}'`);
       }
     });
@@ -20,6 +22,7 @@ export const Logger = {
     if (addEventHandlers[eventName]) {
       addEventHandlers[eventName](eventName, eventBody, sendNow);
     } else {
+      // eslint-disable-next-line no-console
       console.warn(`No event handler for event '${eventName}'`);
     }
   },
@@ -37,13 +40,13 @@ export const Logger = {
 
   send(log) {
     const { impressionId, source, sourceId, events } = log;
-    let url = '/superset/log/';
+    let endpoint = '/superset/log/?explode=events';
 
     // backend logs treat these request params as first-class citizens
     if (source === 'dashboard') {
-      url += `?dashboard_id=${sourceId}`;
+      endpoint += `&dashboard_id=${sourceId}`;
     } else if (source === 'slice') {
-      url += `?slice_id=${sourceId}`;
+      endpoint += `&slice_id=${sourceId}`;
     }
 
     const eventData = [];
@@ -59,14 +62,10 @@ export const Logger = {
       });
     }
 
-    $.ajax({
-      url,
-      method: 'POST',
-      dataType: 'json',
-      data: {
-        explode: 'events',
-        events: JSON.stringify(eventData),
-      },
+    SupersetClient.post({
+      endpoint,
+      postPayload: { events: eventData },
+      parseMethod: null,
     });
 
     // flush events for this logger
@@ -84,7 +83,7 @@ export class ActionLog {
     this.impressionId = impressionId;
     this.source = source;
     this.sourceId = sourceId;
-    this.eventNames = eventNames;
+    this.eventNames = eventNames || [];
     this.sendNow = sendNow || false;
     this.events = {};
 
@@ -141,13 +140,6 @@ export const LOG_ACTIONS_EXPLORE_DASHBOARD_CHART = 'explore_dashboard_chart';
 export const LOG_ACTIONS_EXPORT_CSV_DASHBOARD_CHART = 'export_csv_dashboard_chart';
 export const LOG_ACTIONS_CHANGE_DASHBOARD_FILTER = 'change_dashboard_filter';
 
-// @TODO remove upon v1 deprecation
-export const LOG_ACTIONS_PREVIEW_V2 = 'preview_dashboard_v2';
-export const LOG_ACTIONS_FALLBACK_TO_V1 = 'fallback_to_dashboard_v1';
-export const LOG_ACTIONS_READ_ABOUT_V2_CHANGES = 'read_about_v2_changes';
-export const LOG_ACTIONS_DISMISS_V2_PROMPT = 'dismiss_v2_conversion_prompt';
-export const LOG_ACTIONS_SHOW_V2_INFO_PROMPT = 'show_v2_conversion_prompt';
-
 export const DASHBOARD_EVENT_NAMES = [
   LOG_ACTIONS_MOUNT_DASHBOARD,
   LOG_ACTIONS_FIRST_DASHBOARD_LOAD,
@@ -159,12 +151,6 @@ export const DASHBOARD_EVENT_NAMES = [
   LOG_ACTIONS_EXPORT_CSV_DASHBOARD_CHART,
   LOG_ACTIONS_CHANGE_DASHBOARD_FILTER,
   LOG_ACTIONS_REFRESH_DASHBOARD,
-
-  LOG_ACTIONS_PREVIEW_V2,
-  LOG_ACTIONS_FALLBACK_TO_V1,
-  LOG_ACTIONS_READ_ABOUT_V2_CHANGES,
-  LOG_ACTIONS_DISMISS_V2_PROMPT,
-  LOG_ACTIONS_SHOW_V2_INFO_PROMPT,
 ];
 
 export const EXPLORE_EVENT_NAMES = [

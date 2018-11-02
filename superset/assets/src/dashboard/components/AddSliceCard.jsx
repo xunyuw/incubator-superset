@@ -1,7 +1,7 @@
 import cx from 'classnames';
 import React from 'react';
 import PropTypes from 'prop-types';
-import { t } from '../../locales';
+import { t } from '@superset-ui/translation';
 
 const propTypes = {
   datasourceLink: PropTypes.string,
@@ -35,15 +35,15 @@ function AddSliceCard({
         <div className="card-title">{sliceName}</div>
         <div className="card-body">
           <div className="item">
-            <span>Modified </span>
+            <span>{t('Modified')} </span>
             <span>{lastModified}</span>
           </div>
           <div className="item">
-            <span>Visualization </span>
+            <span>{t('Visualization')} </span>
             <span>{visType}</span>
           </div>
           <div className="item">
-            <span>Data source </span>
+            <span>{t('Data source')} </span>
             <span // eslint-disable-next-line react/no-danger
               dangerouslySetInnerHTML={{ __html: datasourceLink }}
             />
